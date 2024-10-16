@@ -1,0 +1,7 @@
+./app.Db.json
+dest/
+_archive
+node_modules
+.vscode
+build
+appDb.json
