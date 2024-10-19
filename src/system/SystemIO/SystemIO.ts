@@ -40,7 +40,6 @@ export class SystemIO extends EventEmitter {
   }
 
   private handleAttach = async (device: usbDetect.Device): Promise<void> => {
-    console.log(device);
     const previousSerials = this.connectedDrives.map(
       (drive) => drive.serialNum
     );

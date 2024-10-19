@@ -1,6 +1,5 @@
 import { Router, Response, Request } from "express";
 import * as fs from "fs/promises";
-import * as usb from "usb";
 
 export const devices = Router();
 
@@ -18,7 +17,6 @@ devices.get("/", async (req: Request, res: Response) => {
 devices.get("/:serial", async (req: Request, res: Response) => {
   const IOHandler = req.IOHandler;
   const serial = req.params.serial;
-  console.log({ serial });
 
   if (!IOHandler) {
     res.status(500).json({ message: "IOHandler not available" });

@@ -1,15 +1,13 @@
-# Use an Ubuntu-based image as the base
-FROM ubuntu:22.04
+# Use a Node-based Debian image
+FROM node:20-bullseye
 
 # Set the working directory
 WORKDIR /app
 
-# Install Node.js, npm, and necessary Linux utilities including build-essential and libudev-dev
+# Install necessary Linux utilities including build-essential, libudev-dev, and udevadm
 RUN apt-get update && \
-    apt-get install -y curl build-essential libudev-dev python3 util-linux hdparm smartmontools \
-    git pkg-config libusb-1.0-0 libusb-1.0-0-dev usbutils && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -y build-essential libudev-dev python3 util-linux hdparm smartmontools \
+    git pkg-config libusb-1.0-0 libusb-1.0-0-dev usbutils udev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
