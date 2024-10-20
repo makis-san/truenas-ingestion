@@ -20,11 +20,28 @@ export class SystemIO extends EventEmitter {
     process.on("exit", this.handleExit);
     process.on("SIGTERM", this.handleExit);
     this.updateConnectedDrives();
+    this.registerFetchConnectedDrives(connectedDrivesCb);
   }
 
   private async updateConnectedDrives(): Promise<DiskType[]> {
-    this.connectedDrives = await si.diskLayout();
+    try {
+      this.connectedDrives = await si.diskLayout();
+      log("INFO", "Drives updated", this.connectedDrives);
+    } catch (error) {
+      log("ERROR", "Failed to update drives", error);
+    }
     return this.connectedDrives;
+  }
+
+  private registerFetchConnectedDrives(
+    cb: (driveData: DiskType[]) => void
+  ): void {
+    setTimeout(() => {
+      this.updateConnectedDrives().then((drives) => {
+        cb(drives);
+        this.registerFetchConnectedDrives(cb);
+      });
+    }, this.timeout);
   }
 
   private handleAttach = async (device: usbDetect.Device): Promise<void> => {
@@ -32,7 +49,7 @@ export class SystemIO extends EventEmitter {
       (drive) => drive.serialNum
     );
 
-    const newSerials = await this.getConnectedDrives().then((drives) =>
+    const newSerials = await this.getConnectedDrives(true).then((drives) =>
       drives.map((drive) => drive.serialNum)
     );
 
@@ -64,7 +81,7 @@ export class SystemIO extends EventEmitter {
   };
 
   private handleDetach = async (device: usbDetect.Device): Promise<void> => {
-    await this.getConnectedDrives();
+    await this.getConnectedDrives(true);
     this.emit("deviceDetached", device);
   };
 
@@ -75,8 +92,12 @@ export class SystemIO extends EventEmitter {
     process.exit();
   };
 
-  public async getConnectedDrives(): Promise<DiskType[]> {
-    await this.updateConnectedDrives();
+  public async getConnectedDrives(
+    forceUpdate: boolean = false
+  ): Promise<DiskType[]> {
+    if (forceUpdate) {
+      await this.updateConnectedDrives(); // Force drive update if requested
+    }
     return this.connectedDrives;
   }
 
@@ -85,18 +106,28 @@ export class SystemIO extends EventEmitter {
   ): Promise<
     (DiskType & { mountpoints?: driveList.Mountpoint[] }) | undefined
   > {
-    const disks = await this.getConnectedDrives();
+    const disks = await this.getConnectedDrives(true);
     const drive = disks.find((where) => where.serialNum === serial);
 
     if (!drive) {
+      log("WARN", `No drive found with serial number: ${serial}`);
       return;
     }
 
-    const mountpoints = await driveList.list().then((drives) => {
-      return drives.find(
-        (where) => where.device.toLowerCase() === drive?.device.toLowerCase()
-      )?.mountpoints;
-    });
+    const mountpoints = await driveList
+      .list()
+      .then((drives) => {
+        return (
+          drives.find(
+            (where) =>
+              where.device.toLowerCase() === drive?.device.toLowerCase()
+          )?.mountpoints ?? []
+        );
+      })
+      .catch((error) => {
+        log("ERROR", "Error fetching mountpoints from drivelist", error);
+        return [];
+      });
 
     return {
       ...drive,
