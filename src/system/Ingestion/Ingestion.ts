@@ -125,6 +125,7 @@ export class Ingestion {
     log("INFO", `Running ingestion for device: ${serial}`);
 
     const drive = await this.systemIO.getDriveBySerial(serial);
+
     if (!drive?.mountpoints) {
       log("INFO", `Ingestion failed for device: ${serial}`);
       return;
@@ -132,7 +133,7 @@ export class Ingestion {
 
     const srcDir = drive?.mountpoints.filter(
       (where) => where.label !== "EFI"
-    )[0].path;
+    )[0]?.path;
     const destDir = "./dest";
     const archiveDir = "./_archive";
 

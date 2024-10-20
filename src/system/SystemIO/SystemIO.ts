@@ -35,7 +35,6 @@ export class SystemIO extends EventEmitter {
     const newSerials = await this.getConnectedDrives().then((drives) =>
       drives.map((drive) => drive.serialNum)
     );
-    console.log("HANDLE ATTACH:", await this.getConnectedDrives());
 
     const addedSerials = newSerials.filter(
       (serial) => !previousSerials.includes(serial)
@@ -87,7 +86,6 @@ export class SystemIO extends EventEmitter {
     (DiskType & { mountpoints?: driveList.Mountpoint[] }) | undefined
   > {
     const disks = await this.getConnectedDrives();
-    console.log("DRIVE BY SERIAL:", await this.getConnectedDrives());
     const drive = disks.find((where) => where.serialNum === serial);
 
     if (!drive) {

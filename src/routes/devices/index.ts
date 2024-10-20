@@ -11,8 +11,6 @@ devices.get("/", async (req: Request, res: Response) => {
     return;
   }
 
-  console.log("LIST ALL:", await req.IOHandler.getConnectedDrives());
-
   res.json(await req.IOHandler.getConnectedDrives());
 });
 

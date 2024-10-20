@@ -35,7 +35,6 @@ ingestion.post("/register", async (req: Request, res: Response) => {
 
     const devices = await req.IOHandler.getConnectedDrives();
 
-    console.log("REGISTER:", devices);
     const deviceDetails = devices.find(
       (where) => (where.serialNum = body.serial)
     );
