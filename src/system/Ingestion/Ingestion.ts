@@ -131,11 +131,18 @@ export class Ingestion {
       return;
     }
 
+    const ingestionDevice = (await db.find(DBTables.ingestionDevices, (cb) => {
+      if (Array.isArray(cb)) {
+        return cb.some((where) => where.serial === serial);
+      }
+      return cb.serial === serial;
+    })) as IngestionDevice;
+
     const srcDir = drive?.mountpoints.filter(
       (where) => where.label !== "EFI"
     )[0]?.path;
-    const destDir = "./dest";
-    const archiveDir = "./_archive";
+    const destDir = ingestionDevice.copyTo;
+    const archiveDir = path.join(ingestionDevice.copyTo, "/_archive");
 
     // Helper function to calculate the checksum (hash) of a file
     const calculateChecksum = async (filePath: string): Promise<string> => {
