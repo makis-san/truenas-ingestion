@@ -130,7 +130,9 @@ export class Ingestion {
       return;
     }
 
-    const srcDir = drive?.mountpoints[0].path;
+    const srcDir = drive?.mountpoints.filter(
+      (where) => where.label !== "EFI"
+    )[0].path;
     const destDir = "./dest";
     const archiveDir = "./_archive";
 
