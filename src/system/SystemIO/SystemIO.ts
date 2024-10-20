@@ -20,23 +20,11 @@ export class SystemIO extends EventEmitter {
     process.on("exit", this.handleExit);
     process.on("SIGTERM", this.handleExit);
     this.updateConnectedDrives();
-    this.registerFetchConnectedDrives(connectedDrivesCb);
   }
 
   private async updateConnectedDrives(): Promise<DiskType[]> {
     this.connectedDrives = await si.diskLayout();
     return this.connectedDrives;
-  }
-
-  private registerFetchConnectedDrives(
-    cb: (driveData: DiskType[]) => void
-  ): void {
-    setTimeout(() => {
-      this.updateConnectedDrives().then((drives) => {
-        cb(drives);
-        this.registerFetchConnectedDrives(cb);
-      });
-    }, this.timeout);
   }
 
   private handleAttach = async (device: usbDetect.Device): Promise<void> => {
