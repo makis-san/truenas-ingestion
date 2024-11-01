@@ -144,7 +144,6 @@ export class Ingestion {
     const destDir = ingestionDevice.copyTo;
     const archiveDir = path.join(ingestionDevice.copyTo, "/_archive");
 
-    // Helper function to calculate the checksum (hash) of a file
     const calculateChecksum = async (filePath: string): Promise<string> => {
       return new Promise((resolve, reject) => {
         const hash = crypto.createHash("sha256");
@@ -155,7 +154,6 @@ export class Ingestion {
       });
     };
 
-    // Function to recursively copy files with logging and versioning
     const copyWithVersioning = async (
       src: string,
       dest: string,

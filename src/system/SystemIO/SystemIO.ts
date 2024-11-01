@@ -5,11 +5,13 @@ import { IngestionDevice } from "../Ingestion/Ingestion";
 import EventEmitter from "events";
 import { log } from "../logger";
 import * as driveList from "drivelist";
+import { MountPoints } from "./MountPoints";
 
 export type DiskType = si.Systeminformation.DiskLayoutData;
 
 export class SystemIO extends EventEmitter {
   private connectedDrives: DiskType[] = [];
+  private mountPointsHandler = new MountPoints();
   private readonly timeout = 5000;
 
   constructor(connectedDrivesCb: (drives: DiskType[]) => void) {
@@ -114,20 +116,7 @@ export class SystemIO extends EventEmitter {
       return;
     }
 
-    const mountpoints = await driveList
-      .list()
-      .then((drives) => {
-        return (
-          drives.find(
-            (where) =>
-              where.device.toLowerCase() === drive?.device.toLowerCase()
-          )?.mountpoints ?? []
-        );
-      })
-      .catch((error) => {
-        log("ERROR", "Error fetching mountpoints from drivelist", error);
-        return [];
-      });
+    const mountpoints = await this.mountPointsHandler.getMountedDrives();
 
     return {
       ...drive,
