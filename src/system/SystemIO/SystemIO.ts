@@ -47,10 +47,10 @@ export class SystemIO extends EventEmitter {
     const previousSerials = this.connectedDrives.map(
       (drive) => drive.serialNum
     );
-    log("INFO", "OLD Drives", previousSerials.join(", "));
+    log("INFO", "OLD Drives", previousSerials);
 
     const newSerials = await this.getConnectedDrives(true).then((drives) => {
-      log("INFO", "New Drives", drives.join(", "));
+      log("INFO", "New Drives", drives);
       return drives.map((drive) => drive.serialNum);
     });
 
