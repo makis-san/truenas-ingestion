@@ -26,7 +26,6 @@ export class SystemIO extends EventEmitter {
   private async updateConnectedDrives(): Promise<DiskType[]> {
     try {
       this.connectedDrives = await si.diskLayout();
-      log("INFO", "Drives updated", this.connectedDrives);
     } catch (error) {
       log("ERROR", "Failed to update drives", error);
     }
@@ -56,6 +55,8 @@ export class SystemIO extends EventEmitter {
     const addedSerials = newSerials.filter(
       (serial) => !previousSerials.includes(serial)
     );
+    log("INFO", "New Serials", newSerials.join(", "));
+    log("INFO", "Added Serials", addedSerials.join(", "));
 
     if (addedSerials.length > 0) {
       const ingestionDevices = (await db.getData(
@@ -65,6 +66,8 @@ export class SystemIO extends EventEmitter {
       const detectedIngestionDevices = addedSerials.filter((serial) =>
         ingestionDevices.find((where) => where.serial === serial)
       );
+
+      log("INFO", "Ingestion Devices", ingestionDevices.join(", "));
 
       if (detectedIngestionDevices.length > 0) {
         log(
