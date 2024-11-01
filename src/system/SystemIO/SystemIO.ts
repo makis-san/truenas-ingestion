@@ -49,40 +49,46 @@ export class SystemIO extends EventEmitter {
     );
     log("INFO", "OLD Drives", previousSerials);
 
-    const newSerials = await this.getConnectedDrives(true).then((drives) => {
-      log("INFO", "New Drives", drives);
-      return drives.map((drive) => drive.serialNum);
-    });
+    setTimeout(async () => {
+      const newSerials = await this.getConnectedDrives(true).then((drives) => {
+        log("INFO", "New Drives", drives);
+        return drives.map((drive) => drive.serialNum);
+      });
 
-    const addedSerials = newSerials.filter(
-      (serial) => !previousSerials.includes(serial)
-    );
-    log("INFO", "New Serials", newSerials.join(", "));
-    log("INFO", "Added Serials", addedSerials.join(", "));
-
-    if (addedSerials.length > 0) {
-      const ingestionDevices = (await db.getData(
-        DBTables.ingestionDevices
-      )) as IngestionDevice[];
-
-      const detectedIngestionDevices = addedSerials.filter((serial) =>
-        ingestionDevices.find((where) => where.serial === serial)
+      const addedSerials = newSerials.filter(
+        (serial) => !previousSerials.includes(serial)
       );
+      log("INFO", "New Serials", newSerials.join(", "));
+      log("INFO", "Added Serials", addedSerials.join(", "));
 
-      log("INFO", "Ingestion Devices", ingestionDevices.join(", "));
+      if (addedSerials.length > 0) {
+        const ingestionDevices = (await db.getData(
+          DBTables.ingestionDevices
+        )) as IngestionDevice[];
 
-      if (detectedIngestionDevices.length > 0) {
+        const detectedIngestionDevices = addedSerials.filter((serial) =>
+          ingestionDevices.find((where) => where.serial === serial)
+        );
+
         log(
           "INFO",
-          "Detected ingestion devices",
-          detectedIngestionDevices.join(", ")
+          "Ingestion Devices",
+          ingestionDevices.map((d) => d.serial).join(", ")
         );
-        // Emit event for bulk ingestion
-        this.emit("deviceAttached", detectedIngestionDevices);
-      } else {
-        log("INFO", "No new ingestion devices detected.");
+
+        if (detectedIngestionDevices.length > 0) {
+          log(
+            "INFO",
+            "Detected ingestion devices",
+            detectedIngestionDevices.join(", ")
+          );
+          // Emit event for bulk ingestion
+          this.emit("deviceAttached", detectedIngestionDevices);
+        } else {
+          log("INFO", "No new ingestion devices detected.");
+        }
       }
-    }
+    }, 5000);
   };
 
   private handleDetach = async (device: usbDetect.Device): Promise<void> => {
