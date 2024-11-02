@@ -20,6 +20,7 @@
     "node-hid": "^3.1.0",
     "node-json-db": "^2.3.0",
     "systeminformation": "^5.23.5",
+    "telegraf": "^4.16.3",
     "typescript": "^5.6.3",
     "usb": "^2.14.0",
     "uuid": "^10.0.0"

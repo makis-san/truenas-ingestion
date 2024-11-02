@@ -9,6 +9,7 @@ import { DBTables } from "../../db/constants";
 import { db } from "../../db/db";
 import { IngestionAction } from "../../routes/ingestion";
 import * as crypto from "crypto";
+import { TelegrafModule } from "../Telegraf/Telegraf";
 
 const pipelineAsync = promisify(pipeline);
 
@@ -32,6 +33,7 @@ class Queue {
   private queue: string[] = [];
   private currentProcessing: string | undefined;
   private isProcessing: boolean = false;
+  private telegraf = new TelegrafModule();
 
   constructor(private ingestion: Ingestion) {}
 
@@ -66,12 +68,21 @@ class Queue {
     if (this.currentProcessing) {
       this.isProcessing = true;
       console.log(`Started processing: ${this.currentProcessing}`);
+      await this.telegraf.sendMessage(
+        `[!] Started to upload files: ${this.currentProcessing}`
+      );
 
       try {
         await this.ingestion.run(this.currentProcessing);
       } catch (error) {
+        await this.telegraf.sendMessage(
+          `[ERROR] Failed uploading files: ${this.currentProcessing}`
+        );
         console.error(`Error processing ${this.currentProcessing}:`, error);
       } finally {
+        await this.telegraf.sendMessage(
+          `[DONE] Finished uploading files: ${this.currentProcessing}`
+        );
         console.log(`Finished processing: ${this.currentProcessing}`);
         this.isProcessing = false;
         this.processNext();
